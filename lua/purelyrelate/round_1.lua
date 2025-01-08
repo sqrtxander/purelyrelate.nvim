@@ -315,18 +315,23 @@ M.continue = function()
     choose_question()
 end
 
-M.reveal = function()
+M.buzz_in = function(team)
     local state = M.state
-    if state.points_awarded then
+    if team ~= 1 and team ~= 2 then
         return
     end
+    if state.points_awarded or team ~= state.turn then
+        return
+    end
+    local opponent = 3 - team
     state.question_over = true
-    util.confirm("Is the answer correct?", state.floats.background, function()
+    util.confirm("Is team " .. team .. "'s answer correct?", state.floats.background, function()
         client.state.points[state.turn] = client.state.points[state.turn] + point_rewards[state.flipped]
         update_points()
         for i = state.flipped + 1, 4 do
             set_clue(i)
         end
+        state.flipped = 4
         util.center_text(state.floats.answer, state.answer)
         state.points_awarded = true
     end, function()
@@ -335,15 +340,12 @@ M.reveal = function()
         end
         state.flipped = 4
         move_points_rewarded()
-        change_team()
-        util.confirm("Is the answer correct?", state.floats.background, function()
-            client.state.points[state.turn] = client.state.points[state.turn] + point_rewards[state.flipped]
+        util.confirm("Is team " .. opponent .. "'s answer correct?", state.floats.background, function()
+            client.state.points[opponent] = client.state.points[opponent] + point_rewards[state.flipped]
             update_points()
-            change_team()
             util.center_text(state.floats.answer, state.answer)
             state.points_awarded = true
         end, function()
-            change_team()
             util.center_text(state.floats.answer, state.answer)
             state.points_awarded = true
         end)
@@ -427,5 +429,37 @@ M.start = function()
         end,
     })
 end
+
+-- debug
+-- client = {
+--     options = {
+--         db = "~/Documents/pr/purely-relate.db",
+--         mappings = {
+--             n = {
+--                 ["`"] = function()
+--                     M.buzz_in(1)
+--                 end,
+--                 ["<BS>"] = function()
+--                     M.buzz_in(2)
+--                 end,
+--                 n = M.next,
+--                 c = M.continue,
+--                 q = function()
+--                     util.teardown(M)
+--                 end,
+--             },
+--         },
+--     },
+--     state = {
+--         points = { 0, 0 },
+--         episode = 1,
+--         round_num = 1,
+--     },
+--     quit = function()
+--         util.teardown(M)
+--     end,
+-- }
+-- M.setup(client)
+-- M.start()
 
 return M
