@@ -331,17 +331,28 @@ M.buzz_in = function(team)
     if state.points_awarded or team ~= state.turn then
         return
     end
+    local team_float = state.floats["points_" .. team]
+    local prev_winhighlight = vim.api.nvim_get_option_value("winhighlight", { win = team_float.win })
+    vim.api.nvim_set_option_value("winhighlight", "FloatBorder:purelyrelateBuzzBorder", { win = team_float.win })
+
     local opponent = 3 - team
     state.question_over = true
+
+    local end_all = function()
+        update_points()
+        util.center_text(state.floats.answer, state.answer)
+        set_clue(4)
+        state.points_awarded = true
+        vim.api.nvim_set_option_value("winhighlight", prev_winhighlight, { win = team_float.win })
+    end
+
     util.confirm("Is team " .. team .. "'s answer correct?", state.floats.background, function()
         client.state.points[state.turn] = client.state.points[state.turn] + point_rewards[state.flipped]
-        update_points()
-        for i = state.flipped + 1, 4 do
+        for i = state.flipped + 1, 3 do
             set_clue(i)
         end
         state.flipped = 4
-        util.center_text(state.floats.answer, state.answer)
-        state.points_awarded = true
+        end_all()
     end, function()
         for i = state.flipped + 1, 3 do
             set_clue(i)
@@ -350,14 +361,9 @@ M.buzz_in = function(team)
         move_points_rewarded()
         util.confirm("Is team " .. opponent .. "'s answer correct?", state.floats.background, function()
             client.state.points[opponent] = client.state.points[opponent] + point_rewards[state.flipped]
-            update_points()
-            set_clue(4)
-            util.center_text(state.floats.answer, state.answer)
-            state.points_awarded = true
+            end_all()
         end, function()
-            set_clue(4)
-            util.center_text(state.floats.answer, state.answer)
-            state.points_awarded = true
+            end_all()
         end)
     end)
 end
@@ -474,10 +480,12 @@ end
 --         episode = 1,
 --         round_num = 1,
 --     },
+--     hl_ns = vim.api.nvim_create_namespace("purelyrelate"),
 --     quit = function()
 --         util.teardown(M)
 --     end,
 -- }
+-- vim.api.nvim_set_hl(client.hl_ns, "purelyrelateBuzzBorder", { bg = "white", fg = "black" })
 -- M.setup(client)
 -- M.start()
 

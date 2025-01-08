@@ -24,8 +24,12 @@ M.next = function()
     pcall(M.round.next)
 end
 
-M.reveal = function()
-    pcall(M.round.reveal)
+M.team_1_buzz = function()
+    pcall(M.round.buzz_in, 1)
+end
+
+M.team_2_buzz = function()
+    pcall(M.round.buzz_in, 2)
 end
 
 M.continue = function()
@@ -52,8 +56,9 @@ M.setup = function(opts)
     opts.mappings.i = opts.mappings.i or {}
     opts.mappings.n = opts.mappings.n
         or {
+            ["`"] = M.team_1_buzz,
+            ["<BS>"] = M.team_2_buzz,
             n = M.next,
-            r = M.reveal,
             c = M.continue,
             q = function()
                 M.quit()
@@ -63,12 +68,16 @@ M.setup = function(opts)
     opts.mappings.x = opts.mappings.x or {}
 
     M.options = opts
+
+    -- highlight groups
+    M.hl_ns = vim.api.nvim_create_namespace("purelyrelate")
+    vim.api.nvim_set_hl(M.hl_ns, "purelyrelateBuzzBorder", { bg = "white", fg = "black" })
 end
 
 M.start = function(episode)
     M.state.round_num = 1
-    M.round = get_round(M.state.round_num)
     M.state.episode = episode
+    M.round = get_round(M.state.round_num)
     local show_cursor = util.hide_cursor()
     M.quit = function()
         quit()
