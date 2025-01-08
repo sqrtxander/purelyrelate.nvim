@@ -72,7 +72,7 @@ M.get_centered_text = function(lines, width, height)
                     print("Text is too wide to fit in the float")
                     cut_idx = width
                 end
-                local first = line:sub(1, cut_idx)
+                local first = line:sub(1, cut_idx - 1) -- -1 to remove the space
                 local second = line:sub(cut_idx + 1)
                 table.insert(new_lines, first)
                 table.insert(new_lines, second)

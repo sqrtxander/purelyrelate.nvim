@@ -2,8 +2,7 @@ local util = require("purelyrelate.util")
 local M = {}
 
 M.options = { db = nil, mappings = {} }
-M.state = { round_num = 1 }
-M.episode = 1
+M.state = { episode = 1, round_num = 1, points = { 0, 0 } }
 M.round = {}
 
 local get_round = function(round_num)
@@ -16,7 +15,7 @@ local get_round = function(round_num)
         round.setup(M)
         return round
     else
-        print("PurelyRelate: failed to load round", round_num)
+        error("PurelyRelate: failed to load round", round_num)
         return nil
     end
 end
@@ -69,7 +68,7 @@ end
 M.start = function(episode)
     M.state.round_num = 1
     M.round = get_round(M.state.round_num)
-    M.episode = episode
+    M.state.episode = episode
     local show_cursor = util.hide_cursor()
     M.quit = function()
         quit()
@@ -83,9 +82,16 @@ M.next_round = function()
     if M.state.round_num == 5 then
         M.state.round_num = 1
     end
-    util.teardown(M.round)
-    M.round = get_round(M.state.round_num)
+    local old_round = M.round
+    local success, round = pcall(get_round, M.state.round_num)
+    M.round = round
+    if not success then
+        util.teardown(old_round)
+        error("PurelyRelate: failed to load round " .. M.state.round_num)
+        return
+    end
     M.round.start()
+    util.teardown(old_round)
 end
 
 return M

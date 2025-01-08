@@ -7,13 +7,11 @@ local point_rewards = { 5, 3, 2, 1 }
 
 local client
 local episode
-local question
 local available_glyphs = {}
 
 M.state = {
     floats = {},
     clues = {},
-    points = { 0, 0 },
     flipped = 1,
     turn = 1,
     question_over = false,
@@ -175,8 +173,20 @@ end
 
 local update_points = function()
     local state = M.state
-    vim.api.nvim_buf_set_lines(state.floats.points_1.buf, 0, -1, false, { string.format("% 2d", state.points[1]) })
-    vim.api.nvim_buf_set_lines(state.floats.points_2.buf, 0, -1, false, { string.format("% 2d", state.points[2]) })
+    vim.api.nvim_buf_set_lines(
+        state.floats.points_1.buf,
+        0,
+        -1,
+        false,
+        { string.format("% 2d", client.state.points[1]) }
+    )
+    vim.api.nvim_buf_set_lines(
+        state.floats.points_2.buf,
+        0,
+        -1,
+        false,
+        { string.format("% 2d", client.state.points[2]) }
+    )
 end
 
 local update_title = function()
@@ -240,7 +250,7 @@ local choose_question = function()
         available_glyphs = vim.tbl_filter(function(t)
             return t ~= glyph
         end, available_glyphs)
-        question = get_question(episode, glyph)
+        local question = get_question(episode, glyph)
         state.clues = vim.fn.json_decode(question.clues)
         state.answer = question.connection
         set_clue(1)
@@ -312,7 +322,7 @@ M.reveal = function()
     end
     state.question_over = true
     util.confirm("Is the answer correct?", state.floats.background, function()
-        state.points[state.turn] = state.points[state.turn] + point_rewards[state.flipped]
+        client.state.points[state.turn] = client.state.points[state.turn] + point_rewards[state.flipped]
         update_points()
         for i = state.flipped + 1, 4 do
             set_clue(i)
@@ -327,7 +337,7 @@ M.reveal = function()
         move_points_rewarded()
         change_team()
         util.confirm("Is the answer correct?", state.floats.background, function()
-            state.points[state.turn] = state.points[state.turn] + point_rewards[state.flipped]
+            client.state.points[state.turn] = client.state.points[state.turn] + point_rewards[state.flipped]
             update_points()
             change_team()
             util.center_text(state.floats.answer, state.answer)
@@ -342,7 +352,7 @@ end
 
 M.setup = function(c)
     client = c
-    episode = client.episode
+    episode = client.state.episode
     local state = M.state
 
     local windows = create_window_configurations()
