@@ -33,7 +33,7 @@ local create_window_configurations = function(point_pos, turn)
     local clue_height = math.floor(height * 0.2)
 
     local answer_width = clue_width * 4 + padding_m * 3
-    local answer_height = math.min(math.floor(height * 0.05), 3)
+    local answer_height = math.max(math.floor(height * 0.05), 1)
 
     local padding_tb = math.floor((height - clue_height - answer_height - padding_m) / 2)
 
