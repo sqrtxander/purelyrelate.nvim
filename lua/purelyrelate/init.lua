@@ -70,15 +70,15 @@ M.setup = function(opts)
     M.options = opts
 
     -- highlight groups
-    vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", { bg = "white", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup1", { bg = "red", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup1Hover", { bg = "red", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup2", { bg = "blue", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup2Hover", { bg = "blue", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup3", { bg = "yellow", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup3Hover", { bg = "yellow", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup4", { bg = "green", fg = "black" })
-    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup4Hover", { bg = "green", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", { fg = "#ffffff" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup1", { fg = "#c81003" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup1Hover", { fg = "#fc554a" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup2", { fg = "#32cd32" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup2Hover", { fg = "#84e184" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup3", { fg = "#0892d0" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup3Hover", { fg = "#55c6f8" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup4", { fg = "#ffc40c" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup4Hover", { fg = "#ffdc6d" })
 end
 
 M.start = function(episode)
