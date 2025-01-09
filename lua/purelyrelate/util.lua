@@ -106,6 +106,10 @@ M.center_text = function(float, text)
     vim.api.nvim_buf_set_lines(float.buf, 0, -1, false, lines)
 end
 
+M.clear_text = function(float)
+    vim.api.nvim_buf_set_lines(float.buf, 0, -1, false, {})
+end
+
 M.confirm = function(prompt, return_float, onyes, onno)
     vim.api.nvim_set_current_win(return_float.win)
     local config = create_confirm_window_configuration()

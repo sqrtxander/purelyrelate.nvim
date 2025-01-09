@@ -70,8 +70,15 @@ M.setup = function(opts)
     M.options = opts
 
     -- highlight groups
-    M.hl_ns = vim.api.nvim_create_namespace("purelyrelate")
-    vim.api.nvim_set_hl(M.hl_ns, "purelyrelateBuzzBorder", { bg = "white", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", { bg = "white", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup1", { bg = "red", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup1Hover", { bg = "red", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup2", { bg = "blue", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup2Hover", { bg = "blue", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup3", { bg = "yellow", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup3Hover", { bg = "yellow", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup4", { bg = "green", fg = "black" })
+    vim.api.nvim_set_hl(0, "purelyrelateSurfaceGroup4Hover", { bg = "green", fg = "black" })
 end
 
 M.start = function(episode)

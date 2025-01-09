@@ -124,10 +124,10 @@ local create_window_configurations = function(point_pos, turn)
         },
         team_turn = {
             relative = "editor",
-            width = 3,
+            width = 3 + 2,
             height = 2,
             style = "minimal",
-            border = "rounded",
+            border = "none",
             col = team_turn_col,
             row = 3,
             zindex = 8,
@@ -205,7 +205,8 @@ local move_team_turn = function()
 end
 
 local clear_answer = function()
-    vim.api.nvim_buf_set_lines(M.state.floats.answer.buf, 0, -1, false, {})
+    local state = M.state
+    util.clear_text(state.floats.answer)
 end
 
 local clear_clue = function(i)
@@ -213,7 +214,7 @@ local clear_clue = function(i)
     if state.floats["clue_" .. i] == nil then
         return
     end
-    vim.api.nvim_buf_set_lines(state.floats["clue_" .. i].buf, 0, -1, false, {})
+    util.clear_text(state.floats["clue_" .. i])
 end
 
 local get_question = function(match, glyph)
@@ -386,6 +387,8 @@ M.setup = function(c)
     state.floats.points_2 = util.create_floating_window(windows.points_2)
     state.floats.team_turn = util.create_floating_window(windows.team_turn)
 
+    util.center_text(M.state.floats.team_turn, "^\n|")
+
     -- keymaps
     for mode, mode_mappings in pairs(client.options.mappings) do
         for key, cb in pairs(mode_mappings) do
@@ -395,8 +398,6 @@ M.setup = function(c)
 end
 
 M.start = function()
-    vim.api.nvim_buf_set_lines(M.state.floats.team_turn.buf, 0, -1, false, { " ^", " |" })
-
     available_glyphs = get_glyphs()
 
     -- local question
@@ -444,7 +445,6 @@ M.start = function()
                 set_clue(4)
             else
                 local clue_4_height = vim.api.nvim_win_get_height(state.floats.clue_4.win)
-                print("HEHRE")
                 if clue_4_height >= 7 then
                     util.center_text(state.floats.clue_4, ascii_qmark)
                 else
@@ -480,12 +480,15 @@ end
 --         episode = 1,
 --         round_num = 1,
 --     },
---     hl_ns = vim.api.nvim_create_namespace("purelyrelate"),
+--     next_round = function()
+--         client.quit()
+--         print("Going to the next round")
+--     end,
 --     quit = function()
 --         util.teardown(M)
 --     end,
 -- }
--- vim.api.nvim_set_hl(client.hl_ns, "purelyrelateBuzzBorder", { bg = "white", fg = "black" })
+-- vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", { fg = "#ffffff" })
 -- M.setup(client)
 -- M.start()
 

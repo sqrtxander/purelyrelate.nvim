@@ -162,7 +162,7 @@ end
 local show_question = function()
     local state = M.state
     if state.question_idx == 0 then
-        vim.api.nvim_buf_set_lines(state.floats.clue.buf, 0, -1, false, {})
+        util.clear_text(state.floats.clue)
         return
     end
     local set = state.sets[state.sets_idx]
@@ -173,7 +173,7 @@ end
 local show_answer = function()
     local state = M.state
     if state.question_idx == 0 then
-        vim.api.nvim_buf_set_lines(state.floats.clue.buf, 0, -1, false, {})
+        util.clear_text(state.floats.clue)
         return
     end
     local set = state.sets[state.sets_idx]
@@ -342,12 +342,15 @@ end
 --         episode = 1,
 --         round_num = 4,
 --     },
---     hl_ns = vim.api.nvim_create_namespace("purelyrelate"),
+--     next_round = function()
+--         client.quit()
+--         print("Going to the next round")
+--     end,
 --     quit = function()
 --         util.teardown(M)
 --     end,
 -- }
--- vim.api.nvim_set_hl(client.hl_ns, "purelyrelateBuzzBorder", { bg = "white", fg = "black" })
+-- vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", {  fg = "white" })
 -- M.setup(client)
 -- M.start()
 
