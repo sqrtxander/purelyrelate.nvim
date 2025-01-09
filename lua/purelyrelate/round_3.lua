@@ -651,8 +651,8 @@ M.continue = function()
         state.points = 10
     end
     client.state.points[state.turn] = client.state.points[state.turn] + state.points
-    print("Team " .. state.turn .. " has " .. state.points .. " point(s)")
 
+    change_team()
     reset()
     choose_surface()
 end
@@ -677,7 +677,6 @@ M.reveal = function() -- solve the surface
                 break
             end
         end
-        print(vim.inspect(state.selected))
         manage_group()
     end
 end
@@ -710,6 +709,8 @@ M.setup = function(c)
     state.floats.round_title = util.create_floating_window(windows.round_title)
     state.floats.group_pointer = util.create_floating_window(windows.group_pointer)
 
+    state.turn = 3 - client.state.start_team
+
     blank_border_hl = vim.api.nvim_get_option_value("winhighlight", { win = state.floats.clue_1.win })
     -- keymaps
     for mode, mode_mappings in pairs(client.options.mappings) do
@@ -729,7 +730,7 @@ M.start = function()
 
     -- auto commands
     vim.api.nvim_create_autocmd("WinClosed", {
-        group = vim.api.nvim_create_augroup("purelyrelate-winclosed", {}),
+        group = client.augroup,
         callback = function(opts)
             foreach_float(function(_, float)
                 if float.buf == opts.buf then
@@ -741,7 +742,7 @@ M.start = function()
     })
 
     vim.api.nvim_create_autocmd("VimResized", {
-        group = vim.api.nvim_create_augroup("purelyrelate-resized", {}),
+        group = client.augroup,
         callback = function()
             local state = M.state
             if not vim.api.nvim_win_is_valid(state.floats.background.win) or state.floats.background.win == nil then
@@ -782,6 +783,7 @@ end
 --             },
 --         },
 --     },
+--     augroup = vim.api.nvim_create_augroup("purelyrelate_round_3", {}),
 --     state = {
 --         points = { 0, 0 },
 --         episode = 1,

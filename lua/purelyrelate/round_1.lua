@@ -1,5 +1,6 @@
 local sqlite = require("sqlite")
 local util = require("purelyrelate.util")
+local glyph_selector = require("purelyrelate.glyph_selector_6")
 
 local M = {}
 local ROUND_TITLE = "Round 1: Relations"
@@ -243,11 +244,8 @@ local choose_question = function()
         client.next_round()
         return
     end
-    vim.ui.select(available_glyphs, { prompt = "Select a tetromino" }, function(glyph, _)
-        if glyph == nil then
-            error("Must select a tetromino")
-            return
-        end
+
+    glyph_selector.setup(client, available_glyphs, function(glyph)
         available_glyphs = vim.tbl_filter(function(t)
             return t ~= glyph
         end, available_glyphs)
@@ -293,11 +291,15 @@ M.set_keymap = function(mode, key, callback)
     foreach_float(function(_, float)
         vim.keymap.set(mode, key, callback, {
             buffer = float.buf,
+            nowait = true,
         })
     end)
 end
 
 M.next = function()
+    if not glyph_selector.state.selected then
+        return
+    end
     local state = M.state
     if state.question_over or state.flipped >= 4 or state.flipped <= 0 then
         return
@@ -308,6 +310,9 @@ M.next = function()
 end
 
 M.continue = function()
+    if not glyph_selector.state.selected then
+        return
+    end
     local state = M.state
     if not state.points_awarded then
         return
@@ -318,6 +323,9 @@ M.continue = function()
 end
 
 M.buzz_in = function(team)
+    if not glyph_selector.state.selected then
+        return
+    end
     local state = M.state
     if team ~= 1 and team ~= 2 then
         return
@@ -366,7 +374,9 @@ M.setup = function(c)
     episode = client.state.episode
     local state = M.state
 
-    local windows = create_window_configurations()
+    state.turn = client.state.start_team
+
+    local windows = create_window_configurations(nil, state.turn)
     state.floats.background = util.create_floating_window(windows.background, true)
     state.floats.clue_1 = util.create_floating_window(windows.clue_1)
     state.floats.clue_2 = util.create_floating_window(windows.clue_2)
@@ -381,28 +391,18 @@ M.setup = function(c)
 
     util.center_text(M.state.floats.team_turn, "^\n|")
 
+    available_glyphs = get_glyphs()
+
     -- keymaps
     for mode, mode_mappings in pairs(client.options.mappings) do
         for key, cb in pairs(mode_mappings) do
             M.set_keymap(mode, key, cb)
         end
     end
-end
-
-M.start = function()
-    available_glyphs = get_glyphs()
-
-    -- local question
-
-    -- start the game
-    update_title()
-    update_points()
-    reset()
-    choose_question()
 
     -- auto commands
     vim.api.nvim_create_autocmd("WinClosed", {
-        group = vim.api.nvim_create_augroup("purelyrelate-winclosed", {}),
+        group = client.augroup,
         callback = function(opts)
             foreach_float(function(_, float)
                 if float.buf == opts.buf then
@@ -414,13 +414,13 @@ M.start = function()
     })
 
     vim.api.nvim_create_autocmd("VimResized", {
-        group = vim.api.nvim_create_augroup("purelyrelate-resized", {}),
+        group = client.augroup,
         callback = function()
-            local state = M.state
+            state = M.state
             if not vim.api.nvim_win_is_valid(state.floats.background.win) or state.floats.background.win == nil then
                 return
             end
-            local windows = create_window_configurations(state.flipped, state.turn)
+            windows = create_window_configurations(state.flipped, state.turn)
             foreach_float(function(name, _)
                 vim.api.nvim_win_set_config(state.floats[name].win, windows[name])
             end)
@@ -439,6 +439,13 @@ M.start = function()
     })
 end
 
+M.start = function()
+    update_title()
+    update_points()
+    reset()
+    choose_question()
+end
+
 -- debug
 -- client = {
 --     options = {
@@ -451,7 +458,16 @@ end
 --                 ["<BS>"] = function()
 --                     M.buzz_in(2)
 --                 end,
---                 n = M.next,
+--                 ["<space>"] = glyph_selector.select,
+--                 k = glyph_selector.up,
+--                 j = glyph_selector.down,
+--                 h = glyph_selector.left,
+--                 l = glyph_selector.right,
+--                 p = glyph_selector.previous,
+--                 n = function()
+--                     M.next()
+--                     pcall(glyph_selector.next)
+--                 end,
 --                 c = M.continue,
 --                 q = function()
 --                     util.teardown(M)
@@ -459,11 +475,14 @@ end
 --             },
 --         },
 --     },
+--     augroup = vim.api.nvim_create_augroup("purelyrelate_round_1", {}),
 --     state = {
 --         points = { 0, 0 },
 --         episode = 1,
 --         round_num = 1,
+--         start_team = 2,
 --     },
+--     round = M,
 --     next_round = function()
 --         client.quit()
 --         print("Going to the next round")

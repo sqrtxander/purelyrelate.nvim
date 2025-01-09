@@ -1,8 +1,14 @@
 local util = require("purelyrelate.util")
+local glyph_selector_6 = require("purelyrelate.glyph_selector_6")
 local M = {}
 
 M.options = { db = nil, mappings = {} }
-M.state = { episode = 1, round_num = 1, points = { 0, 0 } }
+M.state = {
+    episode = 1,
+    round_num = 1,
+    start_team = 1,
+    points = { 0, 0 },
+}
 M.round = {}
 
 local get_round = function(round_num)
@@ -22,6 +28,12 @@ end
 
 M.next = function()
     pcall(M.round.next)
+    pcall(glyph_selector_6.next)
+end
+
+M.previous = function()
+    pcall(M.round.previous)
+    pcall(glyph_selector_6.previous)
 end
 
 M.team_1_buzz = function()
@@ -34,6 +46,35 @@ end
 
 M.continue = function()
     pcall(M.round.continue)
+end
+
+M.reveal = function()
+    pcall(M.round.reveal)
+end
+
+M.left = function()
+    pcall(M.round.left)
+    pcall(glyph_selector_6.left)
+end
+
+M.down = function()
+    pcall(M.round.down)
+    pcall(glyph_selector_6.down)
+end
+
+M.up = function()
+    pcall(M.round.up)
+    pcall(glyph_selector_6.up)
+end
+
+M.right = function()
+    pcall(M.round.right)
+    pcall(glyph_selector_6.right)
+end
+
+M.select = function()
+    pcall(M.round.toggle, M.round.state.pos)
+    pcall(glyph_selector_6.select)
 end
 
 M.quit = function() end
@@ -54,20 +95,28 @@ M.setup = function(opts)
     -- mappings
     opts.mappings = opts.mappings or {}
     opts.mappings.i = opts.mappings.i or {}
-    opts.mappings.n = opts.mappings.n
-        or {
-            ["`"] = M.team_1_buzz,
-            ["<BS>"] = M.team_2_buzz,
-            n = M.next,
-            c = M.continue,
-            q = function()
-                M.quit()
-            end,
-        }
+    opts.mappings.n = opts.mappings.n or {}
+
+    opts.mappings.n["`"] = opts.mappings.n["`"] or M.team_1_buzz
+    opts.mappings.n["<BS>"] = opts.mappings.n["<BS>"] or M.team_2_buzz
+    opts.mappings.n.n = opts.mappings.n.n or M.next
+    opts.mappings.n.c = opts.mappings.n.c or M.continue
+    opts.mappings.n.q = opts.mappings.n.q or function()
+        M.quit()
+    end
+    opts.mappings.n.r = opts.mappings.n.r or M.reveal
+    opts.mappings.n.h = opts.mappings.n.h or M.left
+    opts.mappings.n.j = opts.mappings.n.j or M.down
+    opts.mappings.n.k = opts.mappings.n.k or M.up
+    opts.mappings.n.l = opts.mappings.n.l or M.right
+    opts.mappings.n["<space>"] = opts.mappings.n["<space>"] or M.select
+
     opts.mappings.v = opts.mappings.v or {}
     opts.mappings.x = opts.mappings.x or {}
 
     M.options = opts
+
+    vim.api.nvim_create_augroup("purelyrelate", {})
 
     -- highlight groups
     vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", { fg = "#ffffff" })
@@ -84,6 +133,7 @@ end
 M.start = function(episode)
     M.state.round_num = 1
     M.state.episode = episode
+    M.state.start_team = math.random(1, 2) -- randomise start team
     M.round = get_round(M.state.round_num)
     local show_cursor = util.hide_cursor()
     M.quit = function()
@@ -98,16 +148,14 @@ M.next_round = function()
     if M.state.round_num == 5 then
         M.state.round_num = 1
     end
-    local old_round = M.round
+    util.teardown(M.round)
     local success, round = pcall(get_round, M.state.round_num)
     M.round = round
     if not success then
-        util.teardown(old_round)
         error("PurelyRelate: failed to load round " .. M.state.round_num)
         return
     end
     M.round.start()
-    util.teardown(old_round)
 end
 
 return M

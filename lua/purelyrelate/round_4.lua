@@ -185,6 +185,7 @@ M.set_keymap = function(mode, key, callback)
     foreach_float(function(_, float)
         vim.keymap.set(mode, key, callback, {
             buffer = float.buf,
+            nowait = true,
         })
     end)
 end
@@ -283,7 +284,7 @@ M.start = function()
 
     -- auto commands
     vim.api.nvim_create_autocmd("WinClosed", {
-        group = vim.api.nvim_create_augroup("purelyrelate-winclosed", {}),
+        group = client.augroup,
         callback = function(opts)
             foreach_float(function(_, float)
                 if float.buf == opts.buf then
@@ -295,7 +296,7 @@ M.start = function()
     })
 
     vim.api.nvim_create_autocmd("VimResized", {
-        group = vim.api.nvim_create_augroup("purelyrelate-resized", {}),
+        group = client.augroup,
         callback = function()
             if not vim.api.nvim_win_is_valid(state.floats.background.win) or state.floats.background.win == nil then
                 return
@@ -337,6 +338,7 @@ end
 --             },
 --         },
 --     },
+--     augroup = vim.api.nvim_create_augroup("purelyrelate_round_4", {}),
 --     state = {
 --         points = { 0, 0 },
 --         episode = 1,
