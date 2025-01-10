@@ -1,5 +1,4 @@
 local util = require("purelyrelate.util")
-local glyph_selector_6 = require("purelyrelate.glyph_selector_6")
 local M = {}
 
 M.options = { db = nil, mappings = {} }
@@ -28,12 +27,12 @@ end
 
 M.next = function()
     pcall(M.round.next)
-    pcall(glyph_selector_6.next)
+    pcall(M.round.selector.next)
 end
 
 M.previous = function()
     pcall(M.round.previous)
-    pcall(glyph_selector_6.previous)
+    pcall(M.round.selector.previous)
 end
 
 M.team_1_buzz = function()
@@ -54,33 +53,33 @@ end
 
 M.left = function()
     pcall(M.round.left)
-    pcall(glyph_selector_6.left)
+    pcall(M.round.selector.left)
 end
 
 M.down = function()
     pcall(M.round.down)
-    pcall(glyph_selector_6.down)
+    pcall(M.round.selector.down)
 end
 
 M.up = function()
     pcall(M.round.up)
-    pcall(glyph_selector_6.up)
+    pcall(M.round.selector.up)
 end
 
 M.right = function()
     pcall(M.round.right)
-    pcall(glyph_selector_6.right)
+    pcall(M.round.selector.right)
 end
 
 M.select = function()
     pcall(M.round.toggle, M.round.state.pos)
-    pcall(glyph_selector_6.select)
+    pcall(M.round.selector.select)
 end
 
 M.quit = function() end
 
 local quit = function()
-    pcall(require("purelyrelate.util").teardown, M.round)
+    pcall(util.teardown, M.round)
 end
 
 M.setup = function(opts)

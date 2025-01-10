@@ -1,6 +1,5 @@
 local sqlite = require("sqlite")
 local util = require("purelyrelate.util")
-local glyph_selector = require("purelyrelate.glyph_selector_6")
 
 local M = {}
 local ROUND_TITLE = "Round 1: Relations"
@@ -18,6 +17,7 @@ M.state = {
     question_over = false,
     points_awarded = false,
 }
+M.selector = require("purelyrelate.glyph_selector_6")
 
 local create_window_configurations = function(point_pos, turn)
     point_pos = point_pos or 1
@@ -245,7 +245,7 @@ local choose_question = function()
         return
     end
 
-    glyph_selector.setup(client, available_glyphs, function(glyph)
+    M.selector.setup(client, available_glyphs, function(glyph)
         available_glyphs = vim.tbl_filter(function(t)
             return t ~= glyph
         end, available_glyphs)
@@ -297,7 +297,7 @@ M.set_keymap = function(mode, key, callback)
 end
 
 M.next = function()
-    if not glyph_selector.state.selected then
+    if not M.selector.state.selected then
         return
     end
     local state = M.state
@@ -310,7 +310,7 @@ M.next = function()
 end
 
 M.continue = function()
-    if not glyph_selector.state.selected then
+    if not M.selector.state.selected then
         return
     end
     local state = M.state
@@ -323,7 +323,7 @@ M.continue = function()
 end
 
 M.buzz_in = function(team)
-    if not glyph_selector.state.selected then
+    if not M.selector.state.selected then
         return
     end
     local state = M.state
@@ -417,7 +417,11 @@ M.setup = function(c)
         group = client.augroup,
         callback = function()
             state = M.state
-            if not vim.api.nvim_win_is_valid(state.floats.background.win) or state.floats.background.win == nil then
+            if
+                state.floats.background == nil
+                or not vim.api.nvim_win_is_valid(state.floats.background.win)
+                or state.floats.background.win == nil
+            then
                 return
             end
             windows = create_window_configurations(state.flipped, state.turn)
@@ -458,15 +462,15 @@ end
 --                 ["<BS>"] = function()
 --                     M.buzz_in(2)
 --                 end,
---                 ["<space>"] = glyph_selector.select,
---                 k = glyph_selector.up,
---                 j = glyph_selector.down,
---                 h = glyph_selector.left,
---                 l = glyph_selector.right,
---                 p = glyph_selector.previous,
+--                 ["<space>"] = M.selector.select,
+--                 k = M.selector.up,
+--                 j = M.selector.down,
+--                 h = M.selector.left,
+--                 l = M.selector.right,
+--                 p = M.selector.previous,
 --                 n = function()
 --                     M.next()
---                     pcall(glyph_selector.next)
+--                     M.selector.next()
 --                 end,
 --                 c = M.continue,
 --                 q = function()

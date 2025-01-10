@@ -8,14 +8,14 @@ local callback
 M.state = {
     floats = {},
     pos = { row = 1, col = 1 },
-    dims = { width = 3, height = 2 },
+    dims = { width = 2, height = 1 },
     turn = 1,
     selected = false,
 }
 
 local ROUND_TITLE = "select a tetromino"
 
-local floatorder = { "O", "L", "I", "T", "J", "Z" }
+local floatorder = { "L", "J" }
 local tetrominoes = {
     O = "##\n##",
     L = "# \n# \n##",
@@ -36,16 +36,11 @@ local create_window_configurations = function()
     local clue_width = math.floor((width - padding_lr * 2 - padding_hm * 3) / 4)
     local clue_height = math.floor((height - padding_vm) * 0.2)
 
-    padding_lr = math.floor((width - clue_width * 3 - padding_hm * 2) / 2)
-    local padding_tb = math.floor((height - clue_height * 2 - padding_vm) / 2)
+    padding_lr = math.floor((width - clue_width * 2 - padding_hm) / 2)
+    local padding_tb = math.floor((height - clue_height) / 2)
 
     local title_width = clue_width * 4 + padding_hm * 3
     local title_padding_lr = math.floor((width - title_width) / 2)
-
-    local team_turn_col = 0
-    if M.state.turn == 2 then
-        team_turn_col = width - 5
-    end
 
     return {
         background = {
@@ -57,44 +52,14 @@ local create_window_configurations = function()
             row = 0,
             zindex = 100,
         },
-        glyph_O = {
-            relative = "editor",
-            width = clue_width,
-            height = clue_height,
-            style = "minimal",
-            border = "rounded",
-            col = padding_lr,
-            row = padding_tb,
-            zindex = 101,
-        },
         glyph_L = {
             relative = "editor",
             width = clue_width,
             height = clue_height,
             style = "minimal",
             border = "rounded",
-            col = padding_lr + clue_width + padding_hm,
-            row = padding_tb,
-            zindex = 101,
-        },
-        glyph_I = {
-            relative = "editor",
-            width = clue_width,
-            height = clue_height,
-            style = "minimal",
-            border = "rounded",
-            col = padding_lr + (clue_width + padding_hm) * 2,
-            row = padding_tb,
-            zindex = 101,
-        },
-        glyph_T = {
-            relative = "editor",
-            width = clue_width,
-            height = clue_height,
-            style = "minimal",
-            border = "rounded",
             col = padding_lr,
-            row = padding_tb + clue_height + padding_vm,
+            row = padding_tb,
             zindex = 101,
         },
         glyph_J = {
@@ -104,17 +69,7 @@ local create_window_configurations = function()
             style = "minimal",
             border = "rounded",
             col = padding_lr + clue_width + padding_hm,
-            row = padding_tb + clue_height + padding_vm,
-            zindex = 101,
-        },
-        glyph_Z = {
-            relative = "editor",
-            width = clue_width,
-            height = clue_height,
-            style = "minimal",
-            border = "rounded",
-            col = padding_lr + (clue_width + padding_hm) * 2,
-            row = padding_tb + clue_height + padding_vm,
+            row = padding_tb,
             zindex = 101,
         },
         round_title = {
@@ -127,55 +82,7 @@ local create_window_configurations = function()
             row = 0,
             zindex = 101,
         },
-        team_turn = {
-            relative = "editor",
-            width = 3 + 2,
-            height = 2,
-            style = "minimal",
-            border = "none",
-            col = team_turn_col,
-            row = 3,
-            zindex = 101,
-        },
-        points_1 = {
-            relative = "editor",
-            width = 3,
-            height = 1,
-            style = "minimal",
-            border = "rounded",
-            col = 0,
-            row = 0,
-            zindex = 101,
-        },
-        points_2 = {
-            relative = "editor",
-            width = 3,
-            height = 1,
-            style = "minimal",
-            border = "rounded",
-            col = width - 5,
-            row = 0,
-            zindex = 101,
-        },
     }
-end
-
-local update_points = function()
-    local state = M.state
-    vim.api.nvim_buf_set_lines(
-        state.floats.points_1.buf,
-        0,
-        -1,
-        false,
-        { string.format("% 2d", client.state.points[1]) }
-    )
-    vim.api.nvim_buf_set_lines(
-        state.floats.points_2.buf,
-        0,
-        -1,
-        false,
-        { string.format("% 2d", client.state.points[2]) }
-    )
 end
 
 local pos_to_glyph = function(pos)
@@ -391,18 +298,12 @@ M.setup = function(c, available_tetrominoes, callb)
     local windows = create_window_configurations()
     state.floats.background = util.create_floating_window(windows.background, true)
     state.floats.round_title = util.create_floating_window(windows.round_title)
-    state.floats.team_turn = util.create_floating_window(windows.team_turn)
-    state.floats.points_1 = util.create_floating_window(windows.points_1)
-    state.floats.points_2 = util.create_floating_window(windows.points_2)
 
     for _, glyph in ipairs(available_tetrominoes) do
         local str = "glyph_" .. glyph
         state.floats[str] = util.create_floating_window(windows[str])
         util.center_text(state.floats[str], tetrominoes[glyph])
     end
-
-    update_points()
-    util.center_text(M.state.floats.team_turn, "^\n|")
 
     util.center_text(state.floats.round_title, "Team " .. state.turn .. ", please " .. ROUND_TITLE)
     blank_border_hl = vim.api.nvim_get_option_value("winhighlight", { win = state.floats.round_title.win })
@@ -505,7 +406,7 @@ end
 --     end,
 -- }
 -- vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", { fg = "#ffffff" })
--- M.setup(client, { "O", "Z" }, function(glyph)
+-- M.setup(client, { "L", "J" }, function(glyph)
 --     print("Selected " .. glyph)
 -- end)
 

@@ -15,6 +15,7 @@ M.state = {
     question_over = false,
     points_awarded = false,
 }
+M.selector = {}
 
 local create_window_configurations = function()
     local width = vim.o.columns
@@ -298,7 +299,11 @@ M.start = function()
     vim.api.nvim_create_autocmd("VimResized", {
         group = client.augroup,
         callback = function()
-            if not vim.api.nvim_win_is_valid(state.floats.background.win) or state.floats.background.win == nil then
+            if
+                state.floats.background == nil
+                or not vim.api.nvim_win_is_valid(state.floats.background.win)
+                or state.floats.background.win == nil
+            then
                 return
             end
             local windows = create_window_configurations()

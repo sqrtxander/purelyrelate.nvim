@@ -22,6 +22,7 @@ M.state = {
     question_over = false,
     points_awarded = false,
 }
+M.selector = require("purelyrelate.glyph_selector_2")
 
 local create_window_configurations = function()
     local width = vim.o.columns
@@ -315,11 +316,7 @@ local choose_surface = function()
         client.next_round()
         return
     end
-    vim.ui.select(available_glyphs, { prompt = "Select a tetromino" }, function(glyph, _)
-        if glyph == nil then
-            print("Must select a tetromino")
-            return
-        end
+    M.selector.setup(client, available_glyphs, function(glyph)
         available_glyphs = vim.tbl_filter(function(t)
             return t ~= glyph
         end, available_glyphs)
@@ -510,6 +507,9 @@ M.set_keymap = function(mode, key, callback)
 end
 
 M.toggle = function(pos)
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if not state.playing then
         return
@@ -567,6 +567,9 @@ M.toggle = function(pos)
 end
 
 M.up = function()
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if is_over() or state.pos <= state.groups_found * 4 + 4 then
         return
@@ -577,6 +580,9 @@ M.up = function()
 end
 
 M.down = function()
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if is_over() or state.pos > #state.surface - 4 then
         return
@@ -587,6 +593,9 @@ M.down = function()
 end
 
 M.left = function()
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if is_over() or state.pos % 4 == 1 then
         return
@@ -597,6 +606,9 @@ M.left = function()
 end
 
 M.right = function()
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if is_over() or state.pos % 4 == 0 then
         return
@@ -607,6 +619,9 @@ M.right = function()
 end
 
 M.next = function()
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if not state.question_over or state.points_awarded then
         return
@@ -643,6 +658,9 @@ M.next = function()
 end
 
 M.continue = function()
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if not state.points_awarded then
         return
@@ -658,6 +676,9 @@ M.continue = function()
 end
 
 M.reveal = function() -- solve the surface
+    if not M.selector.state.selected then
+        return
+    end
     local state = M.state
     if not state.question_over then
         return
@@ -745,7 +766,11 @@ M.start = function()
         group = client.augroup,
         callback = function()
             local state = M.state
-            if not vim.api.nvim_win_is_valid(state.floats.background.win) or state.floats.background.win == nil then
+            if
+                state.floats.background == nil
+                or not vim.api.nvim_win_is_valid(state.floats.background.win)
+                or state.floats.background.win == nil
+            then
                 return
             end
             local windows = create_window_configurations()
@@ -769,12 +794,29 @@ end
 --             n = {
 --                 ["<space>"] = function()
 --                     M.toggle(M.state.pos)
+--                     glyph_selector.select()
 --                 end,
---                 ["k"] = M.up,
---                 ["j"] = M.down,
---                 ["h"] = M.left,
---                 ["l"] = M.right,
---                 n = M.next,
+--                 k = function()
+--                     M.up()
+--                     glyph_selector.up()
+--                 end,
+--                 j = function()
+--                     M.down()
+--                     glyph_selector.down()
+--                 end,
+--                 h = function()
+--                     M.left()
+--                     glyph_selector.left()
+--                 end,
+--                 l = function()
+--                     M.right()
+--                     glyph_selector.right()
+--                 end,
+--                 n = function()
+--                     M.next()
+--                     glyph_selector.next()
+--                 end,
+--                 p = glyph_selector.previous,
 --                 c = M.continue,
 --                 r = M.reveal,
 --                 q = function()
@@ -787,8 +829,10 @@ end
 --     state = {
 --         points = { 0, 0 },
 --         episode = 1,
---         round_num = 4,
+--         round_num = 3,
+--         start_team = 1,
 --     },
+--     round = M,
 --     next_round = function()
 --         client.quit()
 --         print("Going to the next round")
