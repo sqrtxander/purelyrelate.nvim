@@ -407,7 +407,7 @@ M.setup = function(c)
         end
     end
 
-    -- autocmds
+    -- auto commands
     vim.api.nvim_create_autocmd("WinClosed", {
         group = client.augroup,
         callback = function(opts)

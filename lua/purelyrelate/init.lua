@@ -130,6 +130,15 @@ M.setup = function(opts)
 end
 
 M.start = function(episode)
+    local restore = {
+        cmdheight = {
+            original = vim.o.cmdheight,
+            purelyrelate = 0,
+        },
+    }
+    for option, config in pairs(restore) do
+        vim.opt[option] = config.present
+    end
     M.state.round_num = 1
     M.state.episode = episode
     M.state.start_team = math.random(1, 2) -- randomise start team
@@ -137,6 +146,9 @@ M.start = function(episode)
     local show_cursor = util.hide_cursor()
     M.quit = function()
         quit()
+        for option, config in pairs(restore) do
+            vim.opt[option] = config.original
+        end
         show_cursor()
     end
     M.round.start()
