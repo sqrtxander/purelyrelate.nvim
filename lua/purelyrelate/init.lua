@@ -6,7 +6,10 @@ M.state = {
     episode = 1,
     round_num = 1,
     start_team = 1,
-    points = { 0, 0 },
+    teams = {
+        { points = 0, name = "Team 1" },
+        { points = 0, name = "Team 2" },
+    },
 }
 M.round = {}
 
@@ -136,22 +139,28 @@ M.start = function(episode)
             purelyrelate = 0,
         },
     }
-    for option, config in pairs(restore) do
-        vim.opt[option] = config.present
-    end
-    M.state.round_num = 1
-    M.state.episode = episode
-    M.state.start_team = math.random(1, 2) -- randomise start team
-    M.round = get_round(M.state.round_num)
-    local show_cursor = util.hide_cursor()
-    M.quit = function()
-        quit()
-        for option, config in pairs(restore) do
-            vim.opt[option] = config.original
-        end
-        show_cursor()
-    end
-    M.round.start()
+    vim.ui.input({ prompt = "Team 1 name" }, function(name_1)
+        M.state.teams[1].name = name_1 or "Team 1"
+        vim.ui.input({ prompt = "Team 2 name" }, function(name_2)
+            M.state.teams[2].name = name_2 or "Team 2"
+            for option, config in pairs(restore) do
+                vim.opt[option] = config.present
+            end
+            M.state.round_num = 1
+            M.state.episode = episode
+            M.state.start_team = math.random(1, 2) -- randomise start team
+            M.round = get_round(M.state.round_num)
+            local show_cursor = util.hide_cursor()
+            M.quit = function()
+                quit()
+                for option, config in pairs(restore) do
+                    vim.opt[option] = config.original
+                end
+                show_cursor()
+            end
+            M.round.start()
+        end)
+    end)
 end
 
 M.next_round = function()

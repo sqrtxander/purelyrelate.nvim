@@ -649,12 +649,17 @@ M.next = function()
             return
         end
     end
-    util.confirm("Is team " .. state.turn .. "'s answer correct?", state.floats.background, function()
-        state.points = state.points + 1
-        end_all()
-    end, function()
-        end_all()
-    end)
+    util.confirm(
+        "Is " .. client.state.teams[state.turn].name .. "'s answer correct?",
+        state.floats.background,
+        function()
+            state.points = state.points + 1
+            end_all()
+        end,
+        function()
+            end_all()
+        end
+    )
 end
 
 M.continue = function()
@@ -668,7 +673,7 @@ M.continue = function()
     if state.points == 8 then
         state.points = 10
     end
-    client.state.points[state.turn] = client.state.points[state.turn] + state.points
+    client.state.teams[state.turn].points = client.state.teams[state.turn].points + state.points
 
     change_team()
     reset()
@@ -794,29 +799,29 @@ end
 --             n = {
 --                 ["<space>"] = function()
 --                     M.toggle(M.state.pos)
---                     glyph_selector.select()
+--                     M.selector.select()
 --                 end,
 --                 k = function()
 --                     M.up()
---                     glyph_selector.up()
+--                     M.selector.up()
 --                 end,
 --                 j = function()
 --                     M.down()
---                     glyph_selector.down()
+--                     M.selector.down()
 --                 end,
 --                 h = function()
 --                     M.left()
---                     glyph_selector.left()
+--                     M.selector.left()
 --                 end,
 --                 l = function()
 --                     M.right()
---                     glyph_selector.right()
+--                     M.selector.right()
 --                 end,
 --                 n = function()
 --                     M.next()
---                     glyph_selector.next()
+--                     M.selector.next()
 --                 end,
---                 p = glyph_selector.previous,
+--                 p = M.selector.previous,
 --                 c = M.continue,
 --                 r = M.reveal,
 --                 q = function()
@@ -827,8 +832,11 @@ end
 --     },
 --     augroup = vim.api.nvim_create_augroup("purelyrelate_round_3", {}),
 --     state = {
---         points = { 0, 0 },
---         episode = 1,
+--         teams = {
+--             { name = "Team 1 haha", points = 0 },
+--             { name = "Team 2 hehe", points = 0 },
+--         },
+--         episode = 2,
 --         round_num = 3,
 --         start_team = 1,
 --     },

@@ -13,8 +13,6 @@ M.state = {
     selected = false,
 }
 
-local ROUND_TITLE = "select a tetromino"
-
 local floatorder = { "O", "L", "I", "T", "J", "Z" }
 local tetrominoes = {
     O = "##\n##",
@@ -167,14 +165,14 @@ local update_points = function()
         0,
         -1,
         false,
-        { string.format("% 2d", client.state.points[1]) }
+        { string.format("% 2d", client.state.teams[1].points) }
     )
     vim.api.nvim_buf_set_lines(
         state.floats.points_2.buf,
         0,
         -1,
         false,
-        { string.format("% 2d", client.state.points[2]) }
+        { string.format("% 2d", client.state.teams[2].points) }
     )
 end
 
@@ -404,7 +402,7 @@ M.setup = function(c, available_tetrominoes, callb)
     update_points()
     util.center_text(M.state.floats.team_turn, "^\n|")
 
-    util.center_text(state.floats.round_title, "Team " .. state.turn .. ", please " .. ROUND_TITLE)
+    util.center_text(state.floats.round_title, client.state.teams[state.turn].name .. ", please choose a tetromino")
     blank_border_hl = vim.api.nvim_get_option_value("winhighlight", { win = state.floats.round_title.win })
 
     state.pos = { row = 1, col = 1 }
@@ -456,7 +454,10 @@ M.setup = function(c, available_tetrominoes, callb)
             end
 
             -- Re-calculates current state contents
-            util.center_text(state.floats.round_title, ROUND_TITLE)
+            util.center_text(
+                state.floats.round_title,
+                client.state.teams[state.turn].name .. ", please choose a tetromino"
+            )
             if state.question_over then
                 util.center_text(state.floats.answer, state.answer)
             end

@@ -179,14 +179,14 @@ local update_points = function()
         0,
         -1,
         false,
-        { string.format("% 2d", client.state.points[1]) }
+        { string.format("% 2d", client.state.teams[1].points) }
     )
     vim.api.nvim_buf_set_lines(
         state.floats.points_2.buf,
         0,
         -1,
         false,
-        { string.format("% 2d", client.state.points[2]) }
+        { string.format("% 2d", client.state.teams[2].points) }
     )
 end
 
@@ -347,8 +347,8 @@ M.buzz_in = function(team)
         vim.api.nvim_set_option_value("winhighlight", prev_winhighlight, { win = team_float.win })
     end
 
-    util.confirm("Is team " .. team .. "'s answer correct?", state.floats.background, function()
-        client.state.points[state.turn] = client.state.points[state.turn] + point_rewards[state.flipped]
+    util.confirm("Is " .. client.state.teams[team].name .. "'s answer correct?", state.floats.background, function()
+        client.state.teams[state.turn].points = client.state.teams[state.turn].points + point_rewards[state.flipped]
         for i = state.flipped + 1, 4 do
             set_clue(i)
         end
@@ -360,12 +360,17 @@ M.buzz_in = function(team)
         end
         state.flipped = 4
         move_points_rewarded()
-        util.confirm("Is team " .. opponent .. "'s answer correct?", state.floats.background, function()
-            client.state.points[opponent] = client.state.points[opponent] + point_rewards[state.flipped]
-            end_all()
-        end, function()
-            end_all()
-        end)
+        util.confirm(
+            "Is " .. client.state.teams[opponent].name .. "'s answer correct?",
+            state.floats.background,
+            function()
+                client.state.teams[opponent].points = client.state.teams[opponent].points + point_rewards[state.flipped]
+                end_all()
+            end,
+            function()
+                end_all()
+            end
+        )
     end)
 end
 
@@ -481,7 +486,10 @@ end
 --     },
 --     augroup = vim.api.nvim_create_augroup("purelyrelate_round_1", {}),
 --     state = {
---         points = { 0, 0 },
+--         teams = {
+--             { name = "Team 1 haha", points = 0 },
+--             { name = "Team 2 hehe", points = 0 },
+--         },
 --         episode = 1,
 --         round_num = 1,
 --         start_team = 2,

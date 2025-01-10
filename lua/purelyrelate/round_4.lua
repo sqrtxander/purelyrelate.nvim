@@ -101,14 +101,14 @@ local update_points = function()
         0,
         -1,
         false,
-        { string.format("% 2d", client.state.points[1]) }
+        { string.format("% 2d", client.state.teams[1].points) }
     )
     vim.api.nvim_buf_set_lines(
         state.floats.points_2.buf,
         0,
         -1,
         false,
-        { string.format("% 2d", client.state.points[2]) }
+        { string.format("% 2d", client.state.teams[2].points) }
     )
 end
 
@@ -235,18 +235,28 @@ M.buzz_in = function(team)
         vim.api.nvim_set_option_value("winhighlight", prev_winhighlight, { win = team_float.win })
     end
 
-    util.confirm("Team " .. team .. " buzzed in!, is their answer correct?", state.floats.background, function()
-        client.state.points[team] = client.state.points[team] + 1
-        end_all()
-    end, function()
-        client.state.points[team] = client.state.points[team] - 1
-        util.confirm("Is team " .. opponent .. "'s answer correct?", state.floats.background, function()
-            client.state.points[opponent] = client.state.points[opponent] + 1
+    util.confirm(
+        client.state.teams[team].name .. " buzzed in!, is their answer correct?",
+        state.floats.background,
+        function()
+            client.state.teams[team].points = client.state.teams[team].points + 1
             end_all()
-        end, function()
-            end_all()
-        end)
-    end)
+        end,
+        function()
+            client.state.teams[team].points = client.state.teams[team].points - 1
+            util.confirm(
+                "Is " .. client.state.teams[opponent].name .. "'s answer correct?",
+                state.floats.background,
+                function()
+                    client.state.teams[opponent].points = client.state.teams[opponent].points + 1
+                    end_all()
+                end,
+                function()
+                    end_all()
+                end
+            )
+        end
+    )
 end
 
 M.setup = function(c)
@@ -345,7 +355,10 @@ end
 --     },
 --     augroup = vim.api.nvim_create_augroup("purelyrelate_round_4", {}),
 --     state = {
---         points = { 0, 0 },
+--         teams = {
+--             { name = "Team 1 haha", points = 0 },
+--             { name = "Team 2 hehe", points = 0 },
+--         },
 --         episode = 1,
 --         round_num = 4,
 --     },
@@ -357,7 +370,7 @@ end
 --         util.teardown(M)
 --     end,
 -- }
--- vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", {  fg = "white" })
+-- vim.api.nvim_set_hl(0, "purelyrelateBuzzBorder", { fg = "white" })
 -- M.setup(client)
 -- M.start()
 
